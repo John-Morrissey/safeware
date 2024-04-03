@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GET Request Example</title>
+</head>
+<body>
+<h1>GET Request Example</h1>
+<div id="info"></div>
+<div id="cookies"></div>
+<div id="error"></div>
+
+<script>
+window.onload = function() {
+  // Function to get URL parameter by name
+  function getUrlParameter(name) {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(window.location.href);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  }
+
+  // Get auth_code from URL
+  var authCode = getUrlParameter('auth_code');
+  if (!authCode) {
+    document.getElementById("error").innerHTML = "Error: Auth code not found in URL";
+    return;
+  }
+
+  var url = "https://learn.safeware.ie/manage/v1/user/session";
+
+  // Authenticate request using the captured auth_code
+  fetch(url, {
+    credentials: 'include',
+    headers: {
+      'Authorization': 'Bearer ' + authCode
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    document.getElementById("info").innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+  })
+  .catch(error => {
+    document.getElementById("error").innerHTML = "Error: " + error.message;
+  });
+
+  // Display cookies
+  var cookies = document.cookie.split(';');
+  var cookiesHTML = "<h2>Cookies</h2><ul>";
+  cookies.forEach(function(cookie) {
+    cookiesHTML += "<li>" + cookie.trim() + "</li>";
+  });
+  cookiesHTML += "</ul>";
+  document.getElementById("cookies").innerHTML = cookiesHTML;
+};
+</script>
+</body>
+</html>
